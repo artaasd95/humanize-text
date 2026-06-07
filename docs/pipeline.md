@@ -66,7 +66,7 @@ Finnish was selected for the intermediate step because of its agglutinative morp
 |-----------|-------|-----|
 | LLM provider | `deepseek` (default) or `openrouter` | Set via `[llm].provider` in `config.toml`. Both use OpenAI-compatible `/chat/completions`. |
 | Temperature | 1.3 | Higher than default (1.0) to increase creative variation. Too high (>1.5) causes incoherence. |
-| Model | Provider default or `[llm].model` | `deepseek-chat` (DeepSeek) or `deepseek/deepseek-chat` (OpenRouter). Any compatible model slug works. |
+| Model | `[llm].model`, `LLM_MODEL`, or `llm_model=` in Python | `deepseek-chat` (DeepSeek) or `deepseek/deepseek-chat` (OpenRouter default). With OpenRouter, set any model ID from [openrouter.ai/models](https://openrouter.ai/models). |
 | Base URL | Provider default or `[llm].base_url` | Override to point at a custom OpenAI-compatible proxy. |
 | History | 1 round | Step 2 sees Step 1's context. More rounds didn't improve quality in testing. |
 | Intermediate language | `fi` (Finnish) | Configurable via `[pipeline].intermediate_lang` in `config.toml`. |

@@ -33,8 +33,13 @@ def normalize_chat_completions_url(base_url: str) -> str:
     return f"{base}/chat/completions"
 
 
-def resolve_llm_config(config: dict) -> dict[str, Any]:
-    """Merge TOML config and environment variables into resolved LLM settings."""
+def resolve_llm_config(config: dict, *, model: str | None = None) -> dict[str, Any]:
+    """Merge TOML config and environment variables into resolved LLM settings.
+
+    Args:
+        config: Loaded config.toml dict.
+        model: Optional Python override for the model slug (highest precedence).
+    """
     llm_cfg = config.get("llm", {})
     pipeline_cfg = config.get("pipeline", {})
     api_keys = config.get("api_keys", {})
@@ -55,9 +60,16 @@ def resolve_llm_config(config: dict) -> dict[str, Any]:
     if env_base_url := os.environ.get("LLM_BASE_URL"):
         base_url = env_base_url
 
-    model = llm_cfg.get("model") or pipeline_cfg.get("model") or defaults["model"]
-    if env_model := os.environ.get("LLM_MODEL"):
-        model = env_model
+    if model:
+        resolved_model = model
+    elif env_model := os.environ.get("LLM_MODEL"):
+        resolved_model = env_model
+    elif llm_model := llm_cfg.get("model"):
+        resolved_model = llm_model
+    elif provider == "deepseek" and (pipeline_model := pipeline_cfg.get("model")):
+        resolved_model = pipeline_model
+    else:
+        resolved_model = defaults["model"]
 
     temperature = llm_cfg.get("temperature", pipeline_cfg.get("temperature", 1.3))
 
@@ -87,7 +99,7 @@ def resolve_llm_config(config: dict) -> dict[str, Any]:
         "provider": provider,
         "display_name": defaults["display_name"],
         "base_url": base_url,
-        "model": model,
+        "model": resolved_model,
         "temperature": temperature,
         "api_key": api_key,
         "extra_headers": extra_headers or None,

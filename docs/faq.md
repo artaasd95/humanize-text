@@ -25,10 +25,16 @@ openrouter_api_key = "sk-or-..."
 
 [llm]
 provider = "openrouter"
-model = "deepseek/deepseek-chat"
+model = "deepseek/deepseek-chat"   # or any OpenRouter model ID
 ```
 
-You can also override the endpoint with `[llm].base_url` or the `LLM_BASE_URL` environment variable.
+Set the model in Python without editing TOML:
+
+```python
+result = run_standard_pipeline(text, config, llm_model="anthropic/claude-3.5-sonnet")
+```
+
+You can also override via `LLM_MODEL` env var or `[llm].base_url` / `LLM_BASE_URL` for custom endpoints. Browse models at [openrouter.ai/models](https://openrouter.ai/models).
 
 ### How long does processing take?
 

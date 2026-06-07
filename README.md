@@ -139,7 +139,15 @@ niutrans_api_key = "your-key"
 
 [llm]
 provider = "openrouter"
-model = "deepseek/deepseek-chat"   # any OpenRouter model slug
+model = "deepseek/deepseek-chat"   # any ID from openrouter.ai/models
+```
+
+Pick the model in Python (overrides config):
+
+```python
+from src.standard import run_standard_pipeline
+
+result = run_standard_pipeline(text, config, llm_model="anthropic/claude-3.5-sonnet")
 ```
 
 Override the API endpoint with `base_url` in `[llm]`, or via `LLM_BASE_URL` / `LLM_API_KEY` environment variables. Full reference: [docs/configuration.md](docs/configuration.md).

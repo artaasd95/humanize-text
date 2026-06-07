@@ -117,6 +117,51 @@ def test_normalize_chat_completions_url(base_url, expected):
     assert normalize_chat_completions_url(base_url) == expected
 
 
+def test_openrouter_ignores_pipeline_model_fallback():
+    """OpenRouter must not inherit pipeline.model (deepseek-chat) when [llm].model is empty."""
+    config = {
+        "api_keys": {"openrouter_api_key": "sk-or-test"},
+        "llm": {"provider": "openrouter"},
+        "pipeline": {"model": "deepseek-chat"},
+    }
+    llm = resolve_llm_config(config)
+    assert llm["model"] == "deepseek/deepseek-chat"
+
+
+def test_openrouter_model_from_llm_section():
+    config = {
+        "api_keys": {"openrouter_api_key": "sk-or-test"},
+        "llm": {
+            "provider": "openrouter",
+            "model": "anthropic/claude-3.5-sonnet",
+        },
+    }
+    llm = resolve_llm_config(config)
+    assert llm["model"] == "anthropic/claude-3.5-sonnet"
+
+
+def test_python_model_override():
+    config = {
+        "api_keys": {"openrouter_api_key": "sk-or-test"},
+        "llm": {
+            "provider": "openrouter",
+            "model": "deepseek/deepseek-chat",
+        },
+    }
+    llm = resolve_llm_config(config, model="google/gemini-2.0-flash-001")
+    assert llm["model"] == "google/gemini-2.0-flash-001"
+
+
+def test_python_model_override_beats_env(monkeypatch):
+    config = {
+        "api_keys": {"openrouter_api_key": "sk-or-test"},
+        "llm": {"provider": "openrouter"},
+    }
+    monkeypatch.setenv("LLM_MODEL", "anthropic/claude-3.5-sonnet")
+    llm = resolve_llm_config(config, model="openai/gpt-4o")
+    assert llm["model"] == "openai/gpt-4o"
+
+
 def test_openrouter_extra_headers():
     config = {
         "api_keys": {"openrouter_api_key": "sk-or-test"},

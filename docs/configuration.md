@@ -34,7 +34,25 @@ openrouter_api_key = "sk-or-..."
 
 [llm]
 provider = "openrouter"
-model = "deepseek/deepseek-chat"   # or anthropic/claude-3.5-sonnet, etc.
+model = "deepseek/deepseek-chat"   # any slug from openrouter.ai/models
+```
+
+Pick any model ID from the [OpenRouter model catalog](https://openrouter.ai/models) — for example `anthropic/claude-3.5-sonnet`, `openai/gpt-4o`, or `google/gemini-2.0-flash-001`. Leave `model` empty to use the OpenRouter default (`deepseek/deepseek-chat`).
+
+**Choose the model in Python** (overrides TOML and env):
+
+```python
+from src.standard.pipeline import run_standard_pipeline
+from src.standard.llm_client import resolve_llm_config
+
+config["llm"]["provider"] = "openrouter"
+
+# Option A: pass model to the pipeline
+result = run_standard_pipeline(text, config, llm_model="anthropic/claude-3.5-sonnet")
+
+# Option B: resolve config first
+llm = resolve_llm_config(config, model="openai/gpt-4o")
+print(llm["model"])  # openai/gpt-4o
 ```
 
 #### Provider defaults
@@ -84,10 +102,18 @@ http_referer = ""         # OpenRouter optional attribution
 app_title = ""            # OpenRouter optional attribution
 
 [pipeline]
-model = "deepseek-chat"   # Fallback if [llm].model is empty
+model = "deepseek-chat"   # Fallback for DeepSeek only when [llm].model is empty
 temperature = 1.3
 intermediate_lang = "fi"
 ```
+
+**Model resolution order** (highest precedence first):
+
+1. `llm_model=` argument to `run_standard_pipeline()`, or `model=` to `resolve_llm_config()`
+2. `LLM_MODEL` environment variable
+3. `[llm].model` in `config.toml`
+4. `[pipeline].model` — **DeepSeek only** (ignored for OpenRouter so you don't accidentally send `deepseek-chat` instead of an OpenRouter slug)
+5. Provider default (`deepseek-chat` or `deepseek/deepseek-chat`)
 
 ## Environment Variable Overrides
 

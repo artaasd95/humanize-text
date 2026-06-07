@@ -142,6 +142,24 @@ model = ""                # empty = provider default model
 temperature = 1.3
 ```
 
+**OpenRouter model selection** — set any [OpenRouter model slug](https://openrouter.ai/models) in config, via env, or in Python:
+
+```toml
+[llm]
+provider = "openrouter"
+model = "anthropic/claude-3.5-sonnet"   # or deepseek/deepseek-chat, openai/gpt-4o, etc.
+```
+
+```python
+# Override model at call time (highest precedence)
+result = run_standard_pipeline(
+    text="Your AI text here",
+    config=config,
+    target_lang="en",
+    llm_model="google/gemini-2.0-flash-001",
+)
+```
+
 Resolve settings programmatically:
 
 ```python
@@ -149,7 +167,11 @@ from src.standard.llm_client import resolve_llm_config
 
 llm = resolve_llm_config(config)
 # llm["provider"], llm["base_url"], llm["model"], llm["api_key"], llm["display_name"]
+
+llm = resolve_llm_config(config, model="anthropic/claude-3.5-sonnet")
 ```
+
+Model precedence (highest first): `llm_model` / `resolve_llm_config(..., model=)` → `LLM_MODEL` env → `[llm].model` in TOML → `[pipeline].model` (DeepSeek only) → provider default.
 
 See [configuration.md](configuration.md) for API keys, OpenRouter model slugs, and env overrides (`LLM_PROVIDER`, `LLM_BASE_URL`, `OPENROUTER_API_KEY`, etc.).
 

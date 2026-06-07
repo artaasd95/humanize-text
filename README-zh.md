@@ -153,7 +153,15 @@ niutrans_api_key = "your-key"
 
 [llm]
 provider = "openrouter"
-model = "deepseek/deepseek-chat"
+model = "deepseek/deepseek-chat"   # 任意 openrouter.ai/models 模型 ID
+```
+
+在 Python 中指定模型（覆盖配置）：
+
+```python
+from src.standard import run_standard_pipeline
+
+result = run_standard_pipeline(text, config, llm_model="anthropic/claude-3.5-sonnet")
 ```
 
 可通过 `[llm].base_url` 或环境变量 `LLM_BASE_URL` / `LLM_API_KEY` 覆盖 API 端点。完整说明见 [docs/configuration.md](docs/configuration.md)。

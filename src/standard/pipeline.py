@@ -21,13 +21,21 @@ from .translators import google_translate, niutrans_translate
 from .llm_rewriter import llm_rewrite
 
 
-def run_standard_pipeline(text: str, config: dict, target_lang: str = "en") -> dict:
+def run_standard_pipeline(
+    text: str,
+    config: dict,
+    target_lang: str = "en",
+    *,
+    llm_model: str | None = None,
+) -> dict:
     """Run the Standard humanization pipeline.
 
     Args:
         text: Input text to humanize.
         config: Configuration dict loaded from config.toml.
         target_lang: Target language code for final output (default: "en").
+        llm_model: Optional OpenRouter/LLM model slug override (e.g.
+            ``anthropic/claude-3.5-sonnet``). Takes precedence over config.
 
     Returns:
         dict with keys:
@@ -35,7 +43,7 @@ def run_standard_pipeline(text: str, config: dict, target_lang: str = "en") -> d
             - 'steps': list of {step, engine, direction, output, length}
             - 'processing_time_ms': total elapsed time in milliseconds
     """
-    llm = resolve_llm_config(config)
+    llm = resolve_llm_config(config, model=llm_model)
     niutrans_key = config["api_keys"]["niutrans_api_key"]
     intermediate_lang = config.get("pipeline", {}).get("intermediate_lang", "fi")
     engine_name = llm["display_name"]
