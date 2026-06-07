@@ -59,7 +59,6 @@ log_level = "info"
 
 [api_keys]
 deepseek_api_key = "your-key-here"
-niutrans_api_key = "your-key-here"
 
 [llm]
 provider = "deepseek"
@@ -69,6 +68,7 @@ temperature = 1.3
 model = "deepseek-chat"
 temperature = 1.3
 intermediate_lang = "fi"
+step4_engine = "google"
 ```
 
 For OpenRouter instead of DeepSeek:
@@ -76,12 +76,14 @@ For OpenRouter instead of DeepSeek:
 ```toml
 [api_keys]
 openrouter_api_key = "sk-or-your-key"
-niutrans_api_key = "your-key-here"
 
 [llm]
 provider = "openrouter"
 model = "deepseek/deepseek-chat"
 temperature = 1.3
+
+[pipeline]
+step4_engine = "google"
 ```
 
 Or switch provider at runtime without editing TOML:
@@ -124,7 +126,7 @@ The Binoculars and RoBERTa models will be downloaded automatically from Hugging 
 
 Required VRAM: ~4GB for Binoculars + RoBERTa models.
 
-> The v1.5.1 Standard Pipeline does **not** require a GPU — it uses external APIs only (LLM provider, Google Translate, Niutrans).
+> The v1.5.1 Standard Pipeline does **not** require a GPU — it uses external APIs only (LLM provider and Google Translate; Niutrans is optional for Step 4).
 
 ---
 

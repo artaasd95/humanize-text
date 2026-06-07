@@ -9,9 +9,8 @@
 - **LLM provider** (Steps 1–2) — choose one:
   - **DeepSeek** (default, free tier available) — set `api_keys.deepseek_api_key`
   - **OpenRouter** (optional) — set `api_keys.openrouter_api_key` and `[llm].provider = "openrouter"`
-- **Niutrans** (free tier available) — for translation Step 4
-
-Google Translate (Step 3) uses the free public API and doesn't require a key.
+- **Google Translate** (Steps 3–4 by default) — free public API, no key required
+- **Niutrans** (optional) — only if `pipeline.step4_engine = "niutrans"` for Step 4
 
 See [configuration.md](configuration.md) for provider setup, model slugs, and environment variable overrides.
 

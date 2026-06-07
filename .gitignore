@@ -18,3 +18,5 @@ desktop.ini
 # Local scratch files
 _*.json
 _scratch/
+
+.venv/

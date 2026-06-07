@@ -5,7 +5,7 @@ Pipeline (4 steps):
   Step 1: Input (EN) → Chinese — DeepSeek humanization rewrite
   Step 2: Chinese → Japanese — DeepSeek humanization rewrite (with history)
   Step 3: Japanese → Finnish — Google Translate (first translation hop)
-  Step 4: Finnish → Target (EN) — Niutrans (second translation hop)
+  Step 4: Finnish → Target (EN) — Google Translate by default (Niutrans optional)
 
 This chain was selected after empirical testing against AI detectors on
 50+ sample texts. See `examples/showcase/` for input/output traces of all
@@ -44,8 +44,9 @@ def run_standard_pipeline(
             - 'processing_time_ms': total elapsed time in milliseconds
     """
     llm = resolve_llm_config(config, model=llm_model)
-    niutrans_key = config["api_keys"]["niutrans_api_key"]
-    intermediate_lang = config.get("pipeline", {}).get("intermediate_lang", "fi")
+    pipeline_cfg = config.get("pipeline", {})
+    intermediate_lang = pipeline_cfg.get("intermediate_lang", "fi")
+    step4_engine = pipeline_cfg.get("step4_engine", "google")
     engine_name = llm["display_name"]
 
     steps = []
@@ -93,15 +94,30 @@ def run_standard_pipeline(
         "output": step3, "length": len(step3),
     })
 
-    # Step 4: Niutrans — intermediate language → target (second translation hop)
-    step4 = niutrans_translate(
-        step3,
-        source=intermediate_lang,
-        target=_lang_code_to_niutrans(target_lang),
-        api_key=niutrans_key,
-    )
+    # Step 4: intermediate language → target (second translation hop)
+    if step4_engine == "niutrans":
+        api_key = config.get("api_keys", {}).get("niutrans_api_key", "")
+        if not api_key:
+            raise ValueError(
+                "niutrans_api_key is required when pipeline.step4_engine = 'niutrans'"
+            )
+        step4 = niutrans_translate(
+            step3,
+            source=intermediate_lang,
+            target=_lang_code_to_niutrans(target_lang),
+            api_key=api_key,
+        )
+        step4_engine_label = "Niutrans"
+    else:
+        if step4_engine != "google":
+            raise ValueError(
+                f"Unsupported pipeline.step4_engine: {step4_engine!r} "
+                "(use 'google' or 'niutrans')"
+            )
+        step4 = google_translate(step3, source=intermediate_lang, target=target_lang)
+        step4_engine_label = "Google"
     steps.append({
-        "step": 4, "engine": "Niutrans",
+        "step": 4, "engine": step4_engine_label,
         "direction": f"{intermediate_lang.upper()} → {target_lang.upper()} (二轮翻译)",
         "output": step4, "length": len(step4),
     })

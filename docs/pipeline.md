@@ -18,8 +18,9 @@ Step 2: LLM (temp 1.3, with history)       ── 日语改写
 Step 3: Google Translate                    ── 一轮翻译
     Japanese → Finnish
     ↓
-Step 4: Niutrans                            ── 二轮翻译
+Step 4: Google Translate (default)        ── 二轮翻译
     Finnish → Target Language (EN)
+    (optional: Niutrans via pipeline.step4_engine = "niutrans")
     ↓
 Output (Humanized EN)
 ```
@@ -38,14 +39,15 @@ These steps do the heavy lifting. The configured LLM at temperature 1.3 doesn't 
 
 Step 2 carries the conversation history from Step 1. This gives the LLM context about what was already changed, preventing it from reverting patterns that Step 1 disrupted.
 
-### Steps 3-4: Cross-Engine Translation Chain
+### Steps 3-4: Translation Chain
 
-Two translation hops through two different engines compound structural changes:
+Two translation hops compound structural changes through distant languages:
 
-- **Google (Step 3):** Neural machine translation with the largest training corpus, applied to the Japanese → Finnish hop
-- **Niutrans (Step 4):** Different NMT architecture and training data, applied to the Finnish → English hop
+- **Google (Step 3):** Japanese → Finnish — neural machine translation with the largest training corpus
+- **Google (Step 4, default):** Finnish → target language — same engine, no extra API key
+- **Niutrans (Step 4, optional):** Set `pipeline.step4_engine = "niutrans"` to use a different NMT architecture for the Finnish → English hop
 
-Using different engines prevents any single-engine fingerprint from surviving. Each engine restructures grammar differently, and the cumulative effect produces text that doesn't match any known AI generation pattern.
+By default both hops use Google Translate. The JA→FI→EN language distance still forces deep restructuring. For stronger cross-engine disruption (different NMT fingerprints per hop), set `step4_engine = "niutrans"` and provide a Niutrans API key.
 
 ### Language Distance Strategy
 
@@ -70,6 +72,7 @@ Finnish was selected for the intermediate step because of its agglutinative morp
 | Base URL | Provider default or `[llm].base_url` | Override to point at a custom OpenAI-compatible proxy. |
 | History | 1 round | Step 2 sees Step 1's context. More rounds didn't improve quality in testing. |
 | Intermediate language | `fi` (Finnish) | Configurable via `[pipeline].intermediate_lang` in `config.toml`. |
+| Step 4 engine | `google` | `"google"` (default) or `"niutrans"` via `[pipeline].step4_engine`. |
 
 ## Validation
 

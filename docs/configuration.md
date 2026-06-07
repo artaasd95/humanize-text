@@ -73,13 +73,13 @@ base_url = "https://my-proxy.example.com/v1"
 model = "deepseek/deepseek-chat"
 ```
 
-### Niutrans API Key
+### Niutrans API Key (optional)
 
-Used for Steps 4-5 (translation).
+Required only when `pipeline.step4_engine = "niutrans"`. The default (`"google"`) uses Google Translate for Step 4 and needs no Niutrans key.
 
 1. Go to [niutrans.com](https://niutrans.com)
 2. Register and get a free API key (free tier available)
-3. Add to config: `niutrans_api_key = "your-key"`
+3. Add to config: `niutrans_api_key = "your-key"` and set `step4_engine = "niutrans"`
 
 ## Configuration Options
 
@@ -91,7 +91,7 @@ log_level = "info"        # debug, info, warning, error
 [api_keys]
 deepseek_api_key = ""     # Required when llm.provider = "deepseek"
 openrouter_api_key = ""   # Required when llm.provider = "openrouter"
-niutrans_api_key = ""     # Required
+niutrans_api_key = ""     # Required only when pipeline.step4_engine = "niutrans"
 
 [llm]
 provider = "deepseek"     # "deepseek" | "openrouter"
@@ -105,7 +105,17 @@ app_title = ""            # OpenRouter optional attribution
 model = "deepseek-chat"   # Fallback for DeepSeek only when [llm].model is empty
 temperature = 1.3
 intermediate_lang = "fi"
+step4_engine = "google"   # "google" (default) | "niutrans"
 ```
+
+### Step 4 engine (`pipeline.step4_engine`)
+
+| Value | Engine | API key |
+|-------|--------|---------|
+| `google` (default) | Google Translate | None (free public API) |
+| `niutrans` | Niutrans | `niutrans_api_key` |
+
+With `google`, Steps 3 and 4 both use Google Translate. The distant-language hops (JA→FI→EN) still restructure text. With `niutrans`, Step 4 uses a different NMT architecture for stronger cross-engine fingerprint disruption.
 
 **Model resolution order** (highest precedence first):
 

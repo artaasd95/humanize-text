@@ -79,6 +79,33 @@ def test_lang_code_mapping_passthrough_for_unknown():
     assert _lang_code_to_niutrans("xx") == "xx"
 
 
+def test_step4_engine_defaults_to_google():
+    config = {"pipeline": {}}
+    assert config.get("pipeline", {}).get("step4_engine", "google") == "google"
+
+
+def test_step4_engine_invalid_raises():
+    from unittest.mock import patch
+
+    from src.standard.pipeline import run_standard_pipeline
+
+    config = {
+        "api_keys": {"deepseek_api_key": "test"},
+        "pipeline": {"step4_engine": "bing"},
+        "llm": {"provider": "deepseek"},
+    }
+    with (
+        patch("src.standard.pipeline.llm_rewrite", side_effect=["zh", "ja"]),
+        patch("src.standard.pipeline.google_translate", return_value="fi text"),
+        patch("src.standard.pipeline.resolve_llm_config", return_value={
+            "api_key": "k", "base_url": "u", "model": "m",
+            "temperature": 1.3, "display_name": "DeepSeek", "extra_headers": {},
+        }),
+        pytest.raises(ValueError, match="Unsupported pipeline.step4_engine"),
+    ):
+        run_standard_pipeline("input text", config)
+
+
 def test_split_text_respects_max_length():
     from src.standard.translators import _split_text
     sentence = "This is a test sentence. " * 200  # ~5000 chars

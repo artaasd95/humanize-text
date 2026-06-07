@@ -5,7 +5,7 @@ from unittest.mock import patch
 import pytest
 from fastapi.testclient import TestClient
 
-from src.standard.api import app
+from src.standard.api import _validate_config, app
 
 
 @pytest.fixture
@@ -13,9 +13,8 @@ def client():
     app.state.config = {
         "api_keys": {
             "deepseek_api_key": "test-deepseek",
-            "niutrans_api_key": "test-niutrans",
         },
-        "pipeline": {"intermediate_lang": "fi"},
+        "pipeline": {"intermediate_lang": "fi", "step4_engine": "google"},
     }
     app.state.config_error = None
     with TestClient(app) as test_client:
@@ -74,3 +73,18 @@ def test_humanize_missing_config_returns_503():
     with TestClient(app) as client:
         response = client.post("/humanize", json={"text": "some text"})
     assert response.status_code == 503
+
+
+def test_validate_config_google_step4_no_niutrans_key():
+    _validate_config({
+        "api_keys": {"deepseek_api_key": "test-deepseek"},
+        "pipeline": {"step4_engine": "google"},
+    })
+
+
+def test_validate_config_niutrans_step4_requires_key():
+    with pytest.raises(ValueError, match="niutrans_api_key"):
+        _validate_config({
+            "api_keys": {"deepseek_api_key": "test-deepseek"},
+            "pipeline": {"step4_engine": "niutrans"},
+        })

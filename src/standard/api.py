@@ -21,10 +21,14 @@ def _load_config(path: str) -> dict:
 
 def _validate_config(config: dict) -> None:
     api_keys = config.get("api_keys", {})
+    pipeline_cfg = config.get("pipeline", {})
     missing = []
     if not api_keys.get("deepseek_api_key"):
         missing.append("deepseek_api_key")
-    if not api_keys.get("niutrans_api_key"):
+    if (
+        pipeline_cfg.get("step4_engine", "google") == "niutrans"
+        and not api_keys.get("niutrans_api_key")
+    ):
         missing.append("niutrans_api_key")
     if missing:
         raise ValueError(f"Missing required API keys in config: {', '.join(missing)}")

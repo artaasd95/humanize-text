@@ -29,8 +29,10 @@ An AI text humanization toolkit. This repo evolved through two stages:
 The Standard Pipeline preserves the original writing style while routing text through a 4-step chain: two LLM humanization rewrites (DeepSeek or [OpenRouter](https://openrouter.ai) via OpenAI-compatible API) followed by two cross-engine translation hops.
 
 ```
-Input (EN) → Chinese (LLM) → Japanese (LLM) → Finnish (Google) → English (Niutrans)
+Input (EN) → Chinese (LLM) → Japanese (LLM) → Finnish (Google) → English (Google)
 ```
+
+Step 4 uses Google Translate by default (no extra API key). Set `pipeline.step4_engine = "niutrans"` for cross-engine diversity via Niutrans.
 
 LLM steps use **DeepSeek** (default) or **[OpenRouter](https://openrouter.ai)** — any OpenAI-compatible chat API. Configure via `[llm]` in `config.toml`. See [Configuration Guide](docs/configuration.md).
 
@@ -60,12 +62,12 @@ LLM steps use **DeepSeek** (default) or **[OpenRouter](https://openrouter.ai)** 
 | 1 | LLM (temp 1.3) | Input → Chinese (Chinese Rewriting) | LLM humanization rewrite + language shift |
 | 2 | LLM (temp 1.3) | Chinese → Japanese (Japanese Rewriting) | Second LLM humanization, carries Step 1 as history |
 | 3 | Google Translate | Japanese → Finnish (First Round of Translation) | First translation hop — distant language structural disruption |
-| 4 | Niutrans | Finnish → English (Second-Round Translation) | Second translation hop — cross-engine reconstruction |
+| 4 | Google Translate (default) | Finnish → English (Second-Round Translation) | Second translation hop — reconstruction to target language |
 
 ### Why This Chain Works
 
 1. **Steps 1–2 (LLM Rewrite):** Configurable LLM provider (DeepSeek default, OpenRouter optional) at temperature 1.3 rewrites while translating, breaking AI statistical fingerprints with creative variation. Step 2 carries Step 1 as conversation history for coherent humanization.
-2. **Steps 3–4 (Multi-Engine Translation):** Two different NMT engines (Google → Niutrans) introduce compounding structural changes. No single-engine fingerprint survives.
+2. **Steps 3–4 (Translation Chain):** Two translation hops through distant languages (Japanese → Finnish → English) restructure grammar and vocabulary. By default both hops use Google Translate; set `pipeline.step4_engine = "niutrans"` to use a second NMT engine for stronger cross-engine disruption.
 3. **Distant Languages:** Chinese → Japanese → Finnish maximizes linguistic distance at each hop, ensuring thorough restructuring before reconstruction to English.
 
 ---
@@ -124,10 +126,12 @@ python -m src.standard.pipeline --input "Your AI-generated text here"
 ```toml
 [api_keys]
 deepseek_api_key = "sk-..."
-niutrans_api_key = "your-key"
 
 [llm]
 provider = "deepseek"
+
+[pipeline]
+step4_engine = "google"   # default; use "niutrans" for optional cross-engine Step 4
 ```
 
 **OpenRouter:**
@@ -135,11 +139,13 @@ provider = "deepseek"
 ```toml
 [api_keys]
 openrouter_api_key = "sk-or-..."
-niutrans_api_key = "your-key"
 
 [llm]
 provider = "openrouter"
 model = "deepseek/deepseek-chat"   # any ID from openrouter.ai/models
+
+[pipeline]
+step4_engine = "google"
 ```
 
 Pick the model in Python (overrides config):

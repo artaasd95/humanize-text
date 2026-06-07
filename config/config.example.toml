@@ -11,7 +11,7 @@ log_level = "info"
 deepseek_api_key = ""
 # OpenRouter API key (required when llm.provider = "openrouter")
 openrouter_api_key = ""
-# Niutrans API key (required for Step 4: 二轮翻译)
+# Niutrans API key (required only when pipeline.step4_engine = "niutrans")
 niutrans_api_key = ""
 
 [llm]
@@ -37,3 +37,5 @@ temperature = 1.3
 # restructuring before reconstruction to the target language.
 # Other tested options: "de" (German), "ko" (Korean)
 intermediate_lang = "fi"
+# Step 4 translation engine: "google" (default, no extra API key) | "niutrans"
+step4_engine = "google"
